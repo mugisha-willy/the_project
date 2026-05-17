@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Eye, Calendar } from 'lucide-react';
+import { FaYoutube } from 'react-icons/fa';
 
 export default function VideoCard({ video, rank }) {
   const formatViews = (views) => {
@@ -8,129 +9,73 @@ export default function VideoCard({ video, rank }) {
     return views;
   };
 
+  const truncateDescription = (description, maxLength = 80) => {
+    if (!description) return 'No description available.';
+    if (description.length <= maxLength) return description;
+    return description.substring(0, maxLength) + '...';
+  };
+
   return (
-    <Link to={`/video/${video.id}`} style={{ textDecoration: 'none' }}>
-      <div style={{ 
-        background: 'var(--card-bg)', 
-        borderRadius: '12px', 
-        overflow: 'hidden', 
-        border: '1px solid var(--border)', 
-        transition: 'all 0.3s',
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column'
-      }}>
+    <Link to={`/video/${video.id}`} className="group">
+      <div className="bg-white rounded-xl overflow-hidden border border-gray-200 transition-all duration-300 hover:border-red-500 hover:-translate-y-1 shadow-sm hover:shadow-xl">
         {/* Thumbnail */}
-        <div style={{ position: 'relative', aspectRatio: '16/9', background: '#000' }}>
+        <div className="relative aspect-video bg-gray-900">
           {video.thumbnail ? (
             <img 
               src={video.thumbnail} 
               alt={video.title} 
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
           ) : (
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              height: '100%',
-              background: '#1a1a1a'
-            }}>
+            <div className="absolute inset-0 flex items-center justify-center">
               🎬
             </div>
           )}
           
-          {/* Live Badge */}
           {video.is_live === 1 && (
-            <span style={{ 
-              position: 'absolute', 
-              top: 8, 
-              left: 8, 
-              background: '#e63946', 
-              padding: '2px 8px', 
-              borderRadius: '4px', 
-              fontSize: '11px',
-              fontWeight: 'bold'
-            }}>
-              🔴 LIVE
-            </span>
+            <span className="absolute top-2 left-2 bg-red-600 text-white text-xs px-2 py-1 rounded">🔴 LIVE</span>
           )}
           
-          {/* Rank Badge for Trending */}
           {rank && (
-            <span style={{ 
-              position: 'absolute', 
-              top: 8, 
-              left: 8, 
-              background: rank <= 3 ? '#e63946' : '#333', 
-              width: 28, 
-              height: 28, 
-              borderRadius: '50%', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              fontWeight: 'bold',
-              fontSize: '12px'
-            }}>
+            <span className="absolute top-2 left-2 bg-red-600 text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold">
               #{rank}
             </span>
           )}
           
-          {/* YouTube Badge */}
           {video.type === 'youtube' && (
-            <span style={{ 
-              position: 'absolute', 
-              bottom: 8, 
-              right: 8, 
-              background: 'rgba(0,0,0,0.7)', 
-              padding: '2px 6px', 
-              borderRadius: '4px', 
-              fontSize: '10px',
-              color: '#fff'
-            }}>
+            <span className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+              <FaYoutube className="w-3 h-3" />
               YouTube
             </span>
           )}
         </div>
         
         {/* Info */}
-        <div style={{ padding: '12px', flex: 1 }}>
-          <h3 style={{ 
-            fontSize: '14px', 
-            fontWeight: 'bold',
-            marginBottom: '6px', 
-            overflow: 'hidden', 
-            display: '-webkit-box', 
-            WebkitLineClamp: 2, 
-            WebkitBoxOrient: 'vertical',
-            color: '#fff'
-          }}>
+        <div className="p-4">
+          <h3 className="font-bold text-lg mb-2 line-clamp-2 group-hover:text-red-600 transition text-gray-800">
             {video.title}
           </h3>
           
-          <div style={{ display: 'flex', gap: '12px', color: '#888', fontSize: '12px', marginTop: '6px' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <Eye size={12} /> {formatViews(video.views)}
+          {/* ✅ Video Description - ADDED */}
+          <p className="text-gray-500 text-sm line-clamp-2 mb-3">
+            {truncateDescription(video.description)}
+          </p>
+          
+          <div className="flex items-center justify-between text-sm text-gray-500">
+            <span className="flex items-center gap-1">
+              <Eye size={14} /> {formatViews(video.views)} views
             </span>
-            {video.created_at && (
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <Calendar size={12} /> {new Date(video.created_at).toLocaleDateString()}
-              </span>
-            )}
+            <span className="flex items-center gap-1">
+              <Calendar size={14} /> {new Date(video.created_at).toLocaleDateString()}
+            </span>
           </div>
           
           {video.category && (
-            <span style={{ 
-              background: 'rgba(230, 57, 70, 0.2)', 
-              padding: '2px 8px', 
-              borderRadius: '12px', 
-              fontSize: '10px', 
-              marginTop: '8px', 
-              display: 'inline-block',
-              color: '#e63946'
-            }}>
-              {video.category}
-            </span>
+            <div className="mt-2">
+              <span className="text-xs bg-gray-100 px-2 py-1 rounded-full text-gray-600">
+                {video.category}
+              </span>
+            </div>
           )}
         </div>
       </div>

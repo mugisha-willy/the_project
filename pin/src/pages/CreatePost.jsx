@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Image, Save, X } from 'lucide-react';
+import { ArrowLeft, Image, Save, X, Upload } from 'lucide-react';
 import api from '../api/api';
 
 function CreatePost() {
@@ -17,13 +17,25 @@ function CreatePost() {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      console.log('📸 Selected file:', {
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        file: file
+      });
       setImage(file);
       setImagePreview(URL.createObjectURL(file));
     }
   };
 
+  const handleRemoveImage = () => {
+    setImage(null);
+    setImagePreview(null);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
     if (!title || !content) {
       setError('Title and content are required');
       return;
@@ -37,17 +49,27 @@ function CreatePost() {
     formData.append('content', content);
     if (image) {
       formData.append('image', image);
+      console.log('📤 Image appended to formData:', image.name);
+    } else {
+      console.log('⚠️ No image selected');
+    }
+    
+    // Log all form data contents
+    for (let pair of formData.entries()) {
+      console.log('FormData entry:', pair[0], pair[1]);
     }
     
     try {
-      await api.post('/posts', formData, {
+      const response = await api.post('/posts', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       });
+      console.log('✅ Post created:', response.data);
       navigate('/posts');
     } catch (err) {
-      console.error('Error creating post:', err);
+      console.error('❌ Error creating post:', err);
+      console.error('Error response:', err.response?.data);
       setError(err.response?.data?.message || 'Failed to create post');
     } finally {
       setLoading(false);
@@ -89,7 +111,6 @@ function CreatePost() {
               />
             </div>
 
-            {/* ✅ Image Upload Section */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Featured Image
@@ -108,14 +129,11 @@ function CreatePost() {
                       <img 
                         src={imagePreview} 
                         alt="Preview" 
-                        className="max-h-48 mx-auto rounded-lg"
+                        className="max-h-64 mx-auto rounded-lg"
                       />
                       <button
                         type="button"
-                        onClick={() => {
-                          setImage(null);
-                          setImagePreview(null);
-                        }}
+                        onClick={handleRemoveImage}
                         className="absolute top-2 right-2 bg-red-600 text-white p-1 rounded-full hover:bg-red-700"
                       >
                         <X className="w-4 h-4" />
@@ -123,7 +141,7 @@ function CreatePost() {
                     </div>
                   ) : (
                     <div className="py-8">
-                      <Image className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                      <Upload className="w-12 h-12 text-gray-400 mx-auto mb-2" />
                       <p className="text-gray-500">Click to upload an image</p>
                       <p className="text-xs text-gray-400 mt-1">JPG, PNG, GIF up to 10MB</p>
                     </div>

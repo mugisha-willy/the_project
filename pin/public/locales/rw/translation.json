@@ -114,7 +114,8 @@
   "video": {
     "like": "Gukunda",
     "share": "Sangiza",
-    "watchOnYouTube": "Reba kuri YouTube"
+    "watchOnYouTube": "Reba kuri YouTube",
+    "havingTrouble":"Ugize ikibazo cyo kereba"
   },
   "videoDetails": {
     "videoInfo": "Amakuru y'amashusho",

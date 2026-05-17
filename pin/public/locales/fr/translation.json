@@ -114,7 +114,8 @@
   "video": {
     "like": "J'aime",
     "share": "Partager",
-    "watchOnYouTube": "Regarder sur YouTube"
+    "watchOnYouTube": "Regarder sur YouTube",
+    "havingTrouble":"Vous avez des difficultés à regarder?"
   },
   "videoDetails": {
     "videoInfo": "Informations sur la vidéo",

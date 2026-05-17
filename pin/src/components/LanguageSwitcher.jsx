@@ -2,10 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronDown, Globe } from 'lucide-react';
 
+// ✅ Order languages with Kinyarwanda first (as default)
 const languages = [
+  { code: 'rw', name: 'Kinyarwanda', flag: '🇷🇼', nativeName: 'Kinyarwanda' },
   { code: 'en', name: 'English', flag: '🇬🇧', nativeName: 'English' },
   { code: 'fr', name: 'Français', flag: '🇫🇷', nativeName: 'Français' },
-  { code: 'rw', name: 'Kinyarwanda', flag: '🇷🇼', nativeName: 'Kinyarwanda' },
 ];
 
 function LanguageSwitcher() {

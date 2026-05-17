@@ -78,7 +78,7 @@ function Dashboard() {
   };
 
   const deleteContactMessage = async (messageId) => {
-    if (!confirm('Delete this message?')) return;
+    if (!confirm(t('dashboard.confirmDelete'))) return;
     try {
       const token = localStorage.getItem('token');
       await api.delete(`/admin/contact-messages/${messageId}`, {
@@ -87,7 +87,7 @@ function Dashboard() {
       fetchContactMessages();
     } catch (error) {
       console.error('Error deleting message:', error);
-      alert('Failed to delete message');
+      alert(t('common.error'));
     }
   };
 
@@ -141,7 +141,7 @@ function Dashboard() {
       setShowDeleteModal(false);
       setItemToDelete(null);
     } catch (error) {
-      alert('Failed to delete');
+      alert(t('common.error'));
     }
   };
 
@@ -191,17 +191,17 @@ function Dashboard() {
     try {
       if (editingPost) {
         await updatePost(editingPost.id, formData);
-        alert('Post updated successfully!');
+        alert(t('common.success'));
       } else {
         await createPost(formData);
-        alert('Post created successfully!');
+        alert(t('common.success'));
       }
       setShowPostModal(false);
       setPostForm({ title: '', content: '', category: 'general', image: null, is_sponsored: false, is_featured: false });
       setPostImagePreview(null);
       fetchAllData();
     } catch (error) {
-      alert('Failed to save post');
+      alert(t('common.error'));
     } finally {
       setPostLoading(false);
     }
@@ -244,24 +244,22 @@ function Dashboard() {
   const unreadMessages = contactMessages.filter(m => !m.is_read).length;
 
   const statCards = [
-    { title: 'Total Videos', value: stats?.totalVideos || 0, icon: Video, color: 'bg-primary' },
-    { title: 'Total Posts', value: stats?.totalPosts || 0, icon: Newspaper, color: 'bg-dark' },
-    { title: 'Video Views', value: formatNumber(stats?.totalVideoViews || 0), icon: Eye, color: 'bg-primary' },
-    { title: 'Post Views', value: formatNumber(stats?.totalPostViews || 0), icon: TrendingUp, color: 'bg-dark' },
-    { title: 'Total Likes', value: formatNumber(stats?.totalLikes || 0), icon: Heart, color: 'bg-primary' },
-    { title: 'Comments', value: formatNumber(stats?.totalComments || 0), icon: MessageCircle, color: 'bg-dark' },
-    { title: 'Messages', value: contactMessages.length, icon: Mail, color: 'bg-blue-500' },
+    { title: t('dashboard.totalVideos'), value: stats?.totalVideos || 0, icon: Video, color: 'bg-primary' },
+    { title: t('dashboard.totalPosts'), value: stats?.totalPosts || 0, icon: Newspaper, color: 'bg-dark' },
+    { title: t('dashboard.videoViews'), value: formatNumber(stats?.totalVideoViews || 0), icon: Eye, color: 'bg-primary' },
+    { title: t('dashboard.postViews'), value: formatNumber(stats?.totalPostViews || 0), icon: TrendingUp, color: 'bg-dark' },
+    { title: t('dashboard.totalLikes'), value: formatNumber(stats?.totalLikes || 0), icon: Heart, color: 'bg-primary' },
+    { title: t('dashboard.totalComments'), value: formatNumber(stats?.totalComments || 0), icon: MessageCircle, color: 'bg-dark' },
+    { title: t('dashboard.allComments'), value: contactMessages.length, icon: Mail, color: 'bg-blue-500' },
   ];
 
   return (
     <div className="min-h-screen bg-off-white">
-      {/* ✅ REMOVED the duplicate navbar section */}
-      
       <div className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-gray-600 mt-1">Welcome back! Manage your content and analytics here.</p>
+          <h1 className="text-3xl font-bold">{t('dashboard.title')}</h1>
+          <p className="text-gray-600 mt-1">{t('dashboard.welcome')} {t('dashboard.subtitle')}</p>
         </div>
 
         {/* Stats Grid */}
@@ -289,7 +287,7 @@ function Dashboard() {
                     : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}
               >
-                Overview
+                {t('dashboard.overview')}
               </button>
               <button
                 onClick={() => setActiveTab('posts')}
@@ -299,7 +297,7 @@ function Dashboard() {
                     : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}
               >
-                Manage Posts
+                {t('dashboard.managePosts')}
               </button>
               <button
                 onClick={() => setActiveTab('videos')}
@@ -309,7 +307,7 @@ function Dashboard() {
                     : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}
               >
-                Manage Videos
+                {t('dashboard.manageVideos')}
               </button>
               <button
                 onClick={() => setActiveTab('messages')}
@@ -319,7 +317,7 @@ function Dashboard() {
                     : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}
               >
-                Messages {unreadMessages > 0 && `(${unreadMessages})`}
+                {t('dashboard.allComments')} {unreadMessages > 0 && `(${unreadMessages})`}
               </button>
             </nav>
           </div>
@@ -330,32 +328,32 @@ function Dashboard() {
               <div className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="bg-gradient-red rounded-xl p-6 text-white">
-                    <h4 className="text-lg font-bold mb-2">Content Performance</h4>
+                    <h4 className="text-lg font-bold mb-2">{t('dashboard.contentPerformance')}</h4>
                     <p className="text-3xl font-bold mb-1">{stats?.totalVideos + stats?.totalPosts}</p>
-                    <p className="text-sm opacity-90">Total content pieces</p>
+                    <p className="text-sm opacity-90">{t('dashboard.totalContent')}</p>
                     <div className="mt-4 flex space-x-4">
                       <div>
                         <p className="text-2xl font-bold">{formatNumber(stats?.totalVideoViews || 0)}</p>
-                        <p className="text-xs opacity-75">Video Views</p>
+                        <p className="text-xs opacity-75">{t('dashboard.videoViews')}</p>
                       </div>
                       <div>
                         <p className="text-2xl font-bold">{formatNumber(stats?.totalPostViews || 0)}</p>
-                        <p className="text-xs opacity-75">Post Views</p>
+                        <p className="text-xs opacity-75">{t('dashboard.postViews')}</p>
                       </div>
                     </div>
                   </div>
                   <div className="bg-dark rounded-xl p-6 text-white">
-                    <h4 className="text-lg font-bold mb-2">Engagement</h4>
+                    <h4 className="text-lg font-bold mb-2">{t('dashboard.engagement')}</h4>
                     <p className="text-3xl font-bold mb-1">{formatNumber((stats?.totalLikes || 0) + (stats?.totalComments || 0))}</p>
-                    <p className="text-sm opacity-90">Total interactions</p>
+                    <p className="text-sm opacity-90">{t('dashboard.totalInteractions')}</p>
                     <div className="mt-4 flex space-x-4">
                       <div>
                         <p className="text-2xl font-bold">{formatNumber(stats?.totalLikes || 0)}</p>
-                        <p className="text-xs opacity-75">Likes</p>
+                        <p className="text-xs opacity-75">{t('dashboard.totalLikes')}</p>
                       </div>
                       <div>
                         <p className="text-2xl font-bold">{formatNumber(stats?.totalComments || 0)}</p>
-                        <p className="text-xs opacity-75">Comments</p>
+                        <p className="text-xs opacity-75">{t('dashboard.totalComments')}</p>
                       </div>
                     </div>
                   </div>
@@ -363,20 +361,20 @@ function Dashboard() {
                 
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="border rounded-xl p-4">
-                    <h3 className="font-bold mb-3">Recent Posts</h3>
+                    <h3 className="font-bold mb-3">{t('dashboard.recentPosts')}</h3>
                     {stats?.recentPosts?.slice(0, 5).map((post) => (
                       <div key={post.id} className="flex justify-between items-center py-2 border-b">
                         <span className="text-sm truncate flex-1">{post.title}</span>
-                        <span className="text-xs text-gray-500">{post.views || 0} views</span>
+                        <span className="text-xs text-gray-500">{post.views || 0} {t('stats.views')}</span>
                       </div>
                     ))}
                   </div>
                   <div className="border rounded-xl p-4">
-                    <h3 className="font-bold mb-3">Recent Videos</h3>
+                    <h3 className="font-bold mb-3">{t('dashboard.recentVideos')}</h3>
                     {stats?.recentVideos?.slice(0, 5).map((video) => (
                       <div key={video.id} className="flex justify-between items-center py-2 border-b">
                         <span className="text-sm truncate flex-1">{video.title}</span>
-                        <span className="text-xs text-gray-500">{video.views || 0} views</span>
+                        <span className="text-xs text-gray-500">{video.views || 0} {t('stats.views')}</span>
                       </div>
                     ))}
                   </div>
@@ -386,7 +384,7 @@ function Dashboard() {
                 <div className="border rounded-xl p-4">
                   <h3 className="font-bold mb-3 flex items-center gap-2">
                     <MessageCircle className="w-4 h-4 text-primary" />
-                    Recent Comments ({comments.length})
+                    {t('dashboard.allComments')} ({comments.length})
                   </h3>
                   {comments.slice(0, 5).map((comment) => (
                     <div key={comment.id} className="py-2 border-b text-sm">
@@ -402,15 +400,15 @@ function Dashboard() {
             {activeTab === 'posts' && (
               <div>
                 <div className="flex justify-between items-center mb-6 gap-4 flex-wrap">
-                  <h3 className="text-lg font-semibold">All Posts ({posts.length})</h3>
+                  <h3 className="text-lg font-semibold">{t('dashboard.allPosts')} ({posts.length})</h3>
                   <div className="flex gap-3">
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <input type="text" placeholder="Search posts..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9 pr-3 py-2 border rounded-lg w-64" />
+                      <input type="text" placeholder={t('dashboard.searchPosts')} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9 pr-3 py-2 border rounded-lg w-64" />
                     </div>
                     <button onClick={() => openPostModal()} className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark flex items-center gap-2">
                       <Plus className="w-4 h-4" />
-                      <span>New Post</span>
+                      <span>{t('dashboard.newPost')}</span>
                     </button>
                   </div>
                 </div>
@@ -418,13 +416,13 @@ function Dashboard() {
                   <table className="w-full">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-4 py-3">Image</th>
-                        <th className="px-4 py-3">Title</th>
-                        <th className="px-4 py-3">Category</th>
-                        <th className="px-4 py-3">Views</th>
-                        <th className="px-4 py-3">Date</th>
-                        <th className="px-4 py-3">Status</th>
-                        <th className="px-4 py-3">Actions</th>
+                        <th className="px-4 py-3">{t('dashboard.image')}</th>
+                        <th className="px-4 py-3">{t('dashboard.title')}</th>
+                        <th className="px-4 py-3">{t('dashboard.category')}</th>
+                        <th className="px-4 py-3">{t('stats.views')}</th>
+                        <th className="px-4 py-3">{t('dashboard.date')}</th>
+                        <th className="px-4 py-3">{t('dashboard.status')}</th>
+                        <th className="px-4 py-3">{t('dashboard.actions')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -437,7 +435,7 @@ function Dashboard() {
                           <td className="px-4 py-3"><span className="px-2 py-1 bg-gray-100 rounded-full text-xs">{post.category || 'general'}</span></td>
                           <td className="px-4 py-3">{post.views || 0}</td>
                           <td className="px-4 py-3 text-sm">{new Date(post.created_at).toLocaleDateString()}</td>
-                          <td className="px-4 py-3">{post.is_featured ? <span className="text-green-600 text-xs">Featured</span> : <span className="text-gray-500 text-xs">Draft</span>}</td>
+                          <td className="px-4 py-3">{post.is_featured ? <span className="text-green-600 text-xs">{t('dashboard.featured')}</span> : <span className="text-gray-500 text-xs">{t('dashboard.draft')}</span>}</td>
                           <td className="px-4 py-3">
                             <div className="flex gap-2">
                               <button onClick={() => openPostModal(post)} className="p-1 text-blue-600 hover:bg-blue-50 rounded"><Edit className="w-4 h-4" /></button>
@@ -456,10 +454,10 @@ function Dashboard() {
             {activeTab === 'videos' && (
               <div>
                 <div className="flex justify-between items-center mb-6 gap-4">
-                  <h3 className="text-lg font-semibold">All Videos ({videos.length})</h3>
+                  <h3 className="text-lg font-semibold">{t('dashboard.allVideos')} ({videos.length})</h3>
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <input type="text" placeholder="Search videos..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9 pr-3 py-2 border rounded-lg w-64" />
+                    <input type="text" placeholder={t('dashboard.searchVideos')} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9 pr-3 py-2 border rounded-lg w-64" />
                   </div>
                 </div>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -470,7 +468,7 @@ function Dashboard() {
                       </div>
                       <div className="p-4">
                         <h3 className="font-bold line-clamp-1">{video.title}</h3>
-                        <p className="text-sm text-gray-500 mt-1">{video.views || 0} views</p>
+                        <p className="text-sm text-gray-500 mt-1">{video.views || 0} {t('stats.views')}</p>
                         <div className="flex justify-between mt-3">
                           <span className="text-xs text-gray-400">{new Date(video.created_at).toLocaleDateString()}</span>
                           <button onClick={() => { setItemToDelete(video); setDeleteType('video'); setShowDeleteModal(true); }} className="p-1 text-red-600 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button>
@@ -488,19 +486,19 @@ function Dashboard() {
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-lg font-semibold flex items-center gap-2">
                     <Mail className="w-5 h-5 text-primary" />
-                    Contact Messages ({contactMessages.length})
+                    {t('dashboard.allComments')} ({contactMessages.length})
                     {unreadMessages > 0 && (
-                      <span className="bg-primary text-white text-xs px-2 py-1 rounded-full">{unreadMessages} unread</span>
+                      <span className="bg-primary text-white text-xs px-2 py-1 rounded-full">{unreadMessages} {t('dashboard.unread')}</span>
                     )}
                   </h3>
-                  <button onClick={fetchContactMessages} className="text-primary text-sm hover:underline">Refresh</button>
+                  <button onClick={fetchContactMessages} className="text-primary text-sm hover:underline">{t('dashboard.refresh')}</button>
                 </div>
 
                 {contactMessages.length === 0 ? (
                   <div className="bg-white rounded-xl shadow-md p-12 text-center">
                     <Inbox className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-gray-700 mb-2">No messages yet</h3>
-                    <p className="text-gray-500">When someone contacts you, messages will appear here.</p>
+                    <h3 className="text-xl font-semibold text-gray-700 mb-2">{t('dashboard.noMessages')}</h3>
+                    <p className="text-gray-500">{t('dashboard.noMessagesDesc')}</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -512,7 +510,7 @@ function Dashboard() {
                               <div className="flex items-center gap-3 mb-2 flex-wrap">
                                 <span className="font-bold text-primary text-lg">{msg.name}</span>
                                 <span className="text-sm text-gray-400">{msg.email}</span>
-                                {!msg.is_read && <span className="bg-primary text-white text-xs px-2 py-0.5 rounded-full">New</span>}
+                                {!msg.is_read && <span className="bg-primary text-white text-xs px-2 py-0.5 rounded-full">{t('dashboard.new')}</span>}
                               </div>
                               <p className="font-semibold text-gray-700 mb-2 text-lg">{msg.subject}</p>
                               <p className="text-gray-600 mb-3 whitespace-pre-wrap">{msg.message}</p>
@@ -522,11 +520,11 @@ function Dashboard() {
                             </div>
                             <div className="flex gap-2 ml-4">
                               {!msg.is_read && (
-                                <button onClick={() => markMessageAsRead(msg.id)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition" title="Mark as read">
+                                <button onClick={() => markMessageAsRead(msg.id)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition" title={t('dashboard.markAsRead')}>
                                   <MailOpen className="w-4 h-4" />
                                 </button>
                               )}
-                              <button onClick={() => deleteContactMessage(msg.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition" title="Delete">
+                              <button onClick={() => deleteContactMessage(msg.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition" title={t('buttons.delete')}>
                                 <Trash className="w-4 h-4" />
                               </button>
                             </div>
@@ -547,16 +545,49 @@ function Dashboard() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
           <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b p-4 flex justify-between items-center">
-              <h3 className="text-xl font-bold">{editingPost ? 'Edit Post' : 'Create New Post'}</h3>
+              <h3 className="text-xl font-bold">{editingPost ? t('dashboard.editPost') : t('dashboard.createPost')}</h3>
               <button onClick={() => setShowPostModal(false)} className="p-1 hover:bg-gray-100 rounded-lg"><X className="w-5 h-5" /></button>
             </div>
             <form onSubmit={handlePostSubmit} className="p-6 space-y-5">
-              <div><label className="block text-sm font-medium mb-2">Title *</label><input type="text" required value={postForm.title} onChange={(e) => setPostForm({ ...postForm, title: e.target.value })} className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" /></div>
-              <div><label className="block text-sm font-medium mb-2">Category</label><select value={postForm.category} onChange={(e) => setPostForm({ ...postForm, category: e.target.value })} className="w-full px-4 py-2 border rounded-lg"><option value="general">General</option><option value="news">News</option><option value="politics">Politics</option><option value="sports">Sports</option><option value="entertainment">Entertainment</option><option value="technology">Technology</option><option value="business">Business</option></select></div>
-              <div><label className="block text-sm font-medium mb-2">Featured Image</label><div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-primary cursor-pointer"><input type="file" accept="image/*" onChange={handleImageChange} className="hidden" id="image-upload" /><label htmlFor="image-upload" className="cursor-pointer">{postImagePreview ? <img src={postImagePreview} className="max-h-48 mx-auto rounded" /> : <div className="py-8"><Image className="w-10 h-10 text-gray-400 mx-auto mb-2" /><p className="text-gray-500">Click to upload image</p></div>}</label></div></div>
-              <div><label className="block text-sm font-medium mb-2">Content *</label><textarea rows="10" required value={postForm.content} onChange={(e) => setPostForm({ ...postForm, content: e.target.value })} className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" /></div>
-              <div className="flex gap-4"><label className="flex items-center gap-2"><input type="checkbox" checked={postForm.is_featured} onChange={(e) => setPostForm({ ...postForm, is_featured: e.target.checked })} className="w-4 h-4 text-primary rounded" /><span className="text-sm">Feature this post</span></label><label className="flex items-center gap-2"><input type="checkbox" checked={postForm.is_sponsored} onChange={(e) => setPostForm({ ...postForm, is_sponsored: e.target.checked })} className="w-4 h-4 text-primary rounded" /><span className="text-sm">Sponsored content</span></label></div>
-              <div className="flex gap-3 pt-4"><button type="submit" disabled={postLoading} className="flex-1 bg-primary text-white py-2 rounded-lg hover:bg-primary-dark disabled:opacity-50 flex items-center justify-center gap-2">{postLoading ? <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div> : <><Save className="w-4 h-4" /><span>{editingPost ? 'Update Post' : 'Publish Post'}</span></>}</button><button type="button" onClick={() => setShowPostModal(false)} className="flex-1 bg-gray-200 text-gray-800 py-2 rounded-lg hover:bg-gray-300">Cancel</button></div>
+              <div>
+                <label className="block text-sm font-medium mb-2">{t('dashboard.title')} *</label>
+                <input type="text" required value={postForm.title} onChange={(e) => setPostForm({ ...postForm, title: e.target.value })} className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">{t('dashboard.category')}</label>
+                <select value={postForm.category} onChange={(e) => setPostForm({ ...postForm, category: e.target.value })} className="w-full px-4 py-2 border rounded-lg">
+                  <option value="general">General</option>
+                  <option value="news">News</option>
+                  <option value="politics">Politics</option>
+                  <option value="sports">Sports</option>
+                  <option value="entertainment">Entertainment</option>
+                  <option value="technology">Technology</option>
+                  <option value="business">Business</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">{t('dashboard.featuredImage')}</label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-primary cursor-pointer">
+                  <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" id="image-upload" />
+                  <label htmlFor="image-upload" className="cursor-pointer">
+                    {postImagePreview ? <img src={postImagePreview} className="max-h-48 mx-auto rounded" /> : <div className="py-8"><Image className="w-10 h-10 text-gray-400 mx-auto mb-2" /><p className="text-gray-500">{t('dashboard.clickToUpload')}</p></div>}
+                  </label>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">{t('dashboard.content')} *</label>
+                <textarea rows="10" required value={postForm.content} onChange={(e) => setPostForm({ ...postForm, content: e.target.value })} className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" />
+              </div>
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2"><input type="checkbox" checked={postForm.is_featured} onChange={(e) => setPostForm({ ...postForm, is_featured: e.target.checked })} className="w-4 h-4 text-primary rounded" /><span className="text-sm">{t('dashboard.featureThisPost')}</span></label>
+                <label className="flex items-center gap-2"><input type="checkbox" checked={postForm.is_sponsored} onChange={(e) => setPostForm({ ...postForm, is_sponsored: e.target.checked })} className="w-4 h-4 text-primary rounded" /><span className="text-sm">{t('dashboard.sponsoredContent')}</span></label>
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button type="submit" disabled={postLoading} className="flex-1 bg-primary text-white py-2 rounded-lg hover:bg-primary-dark disabled:opacity-50 flex items-center justify-center gap-2">
+                  {postLoading ? <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div> : <><Save className="w-4 h-4" /><span>{editingPost ? t('dashboard.update') : t('dashboard.publish')}</span></>}
+                </button>
+                <button type="button" onClick={() => setShowPostModal(false)} className="flex-1 bg-gray-200 text-gray-800 py-2 rounded-lg hover:bg-gray-300">{t('buttons.cancel')}</button>
+              </div>
             </form>
           </div>
         </div>
@@ -566,9 +597,15 @@ function Dashboard() {
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6">
-            <div className="flex items-center gap-3 mb-4"><div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center"><AlertCircle className="w-6 h-6 text-red-600" /></div><h3 className="text-xl font-bold">Confirm Delete</h3></div>
-            <p className="text-gray-600 mb-6">Are you sure you want to delete "{itemToDelete?.title}"? This action cannot be undone.</p>
-            <div className="flex gap-3"><button onClick={handleDelete} className="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700">Delete</button><button onClick={() => setShowDeleteModal(false)} className="flex-1 bg-gray-200 text-gray-800 py-2 rounded-lg hover:bg-gray-300">Cancel</button></div>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center"><AlertCircle className="w-6 h-6 text-red-600" /></div>
+              <h3 className="text-xl font-bold">{t('dashboard.confirmDelete')}</h3>
+            </div>
+            <p className="text-gray-600 mb-6">{t('dashboard.deleteWarning')} "{itemToDelete?.title}"?</p>
+            <div className="flex gap-3">
+              <button onClick={handleDelete} className="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700">{t('buttons.delete')}</button>
+              <button onClick={() => setShowDeleteModal(false)} className="flex-1 bg-gray-200 text-gray-800 py-2 rounded-lg hover:bg-gray-300">{t('buttons.cancel')}</button>
+            </div>
           </div>
         </div>
       )}

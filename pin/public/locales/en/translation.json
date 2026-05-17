@@ -114,7 +114,8 @@
   "video": {
     "like": "Like",
     "share": "Share",
-    "watchOnYouTube": "Watch on YouTube"
+    "watchOnYouTube": "Watch on YouTube",
+    "havingTrouble":"Having trouble watching"
   },
   "videoDetails": {
     "videoInfo": "Video Information",

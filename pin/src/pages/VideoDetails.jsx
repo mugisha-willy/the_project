@@ -2,9 +2,8 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Eye, Calendar, Heart, MessageCircle, Share2, ThumbsUp } from 'lucide-react';
+import { FaYoutube } from 'react-icons/fa';
 import api from '../api/api';
-import DonationButton from '../components/DonationButton';
-import SponsorRequest from '../components/SponsorRequest';
 import Footer from '../components/Footer';
 
 export default function VideoDetails() {
@@ -19,12 +18,12 @@ export default function VideoDetails() {
   const [commentName, setCommentName] = useState('');
   const [commentText, setCommentText] = useState('');
 
-   useEffect(() => {
-  fetchVideo();
-  fetchComments();
-  fetchLikes();
-  api.post(`/videos/${id}/view`).catch(err => console.error('View tracking error:', err));  // ✅ This calls the separate endpoint
-}, [id]);
+  useEffect(() => {
+    fetchVideo();
+    fetchComments();
+    fetchLikes();
+    api.post(`/view-video/${id}`).catch(err => console.error('View error:', err));
+  }, [id]);
 
   const fetchVideo = async () => {
     try {
@@ -42,7 +41,7 @@ export default function VideoDetails() {
   const fetchComments = async () => {
     try {
       const response = await api.get(`/comments?video_id=${id}`);
-      setComments(response.data);
+      setComments(response.data || []);
     } catch (err) {
       console.error('Error fetching comments:', err);
     }
@@ -51,7 +50,7 @@ export default function VideoDetails() {
   const fetchLikes = async () => {
     try {
       const response = await api.get(`/likes?video_id=${id}`);
-      setLikes(response.data.count);
+      setLikes(response.data?.count || 0);
     } catch (err) {
       console.error('Error fetching likes:', err);
     }
@@ -98,24 +97,11 @@ export default function VideoDetails() {
     );
   }
 
-  if (error) {
+  if (error || !video) {
     return (
       <div className="min-h-screen bg-off-white flex items-center justify-center">
         <div className="bg-red-50 text-red-600 p-6 rounded-xl text-center max-w-md">
-          <p className="mb-4">{error}</p>
-          <Link to="/videos" className="inline-block bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary-dark transition">
-            {t('common.back')}
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  if (!video) {
-    return (
-      <div className="min-h-screen bg-off-white flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-500 mb-4">Video not found</p>
+          <p className="mb-4">{error || 'Video not found'}</p>
           <Link to="/videos" className="inline-block bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary-dark transition">
             {t('common.back')}
           </Link>
@@ -141,17 +127,18 @@ export default function VideoDetails() {
               <Eye className="w-4 h-4" />
               <span>{video.views?.toLocaleString() || 0} {t('stats.views')}</span>
             </div>
-            
             <div className="flex items-center gap-1">
               <Heart className="w-4 h-4" />
               <span>{likes} {t('stats.likes')}</span>
             </div>
-            
             <div className="flex items-center gap-1">
               <MessageCircle className="w-4 h-4" />
               <span>{comments.length} {t('stats.comments')}</span>
             </div>
-            
+            <div className="flex items-center gap-1">
+              <Calendar className="w-4 h-4" />
+              <span>{new Date(video.created_at).toLocaleDateString()}</span>
+            </div>
             {video.category && (
               <span className="px-2 py-1 bg-primary/20 text-primary text-xs rounded-full">
                 {video.category}
@@ -166,16 +153,17 @@ export default function VideoDetails() {
           {/* Main Content */}
           <div className="lg:col-span-2">
             {/* Video Player */}
-            <div className="bg-black rounded-xl overflow-hidden shadow-lg">
+            <div className="bg-black rounded-xl overflow-hidden shadow-lg aspect-video">
               <iframe
                 width="100%"
-                height="450"
-                src={`https://www.youtube.com/embed/${video.youtube_video_id}`}
+                height="100%"
+                src={`https://www.youtube-nocookie.com/embed/${video.youtube_video_id}`}
                 title={video.title}
                 frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen
-                className="w-full aspect-video"
+                className="w-full h-full"
               />
             </div>
 
@@ -193,23 +181,7 @@ export default function VideoDetails() {
                 className="flex items-center gap-2 px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition"
               >
                 <ThumbsUp className="w-4 h-4" />
-                <span>{t('video')} ({likes})</span>
-              </button>
-              
-              <DonationButton videoId={video.id} />
-              <SponsorRequest />
-              
-              <button
-                onClick={() => {
-                  navigator.share?.({
-                    title: video.title,
-                    url: window.location.href
-                  }).catch(() => {});
-                }}
-                className="flex items-center gap-2 px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
-              >
-                <Share2 className="w-4 h-4" />
-                <span>{t('video')}</span>
+                <span>{t('video.like')} ({likes})</span>
               </button>
             </div>
 
@@ -232,7 +204,6 @@ export default function VideoDetails() {
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                     />
                   </div>
-                  
                   <div className="mb-4">
                     <textarea
                       placeholder={t('videos.writeComment')}
@@ -243,7 +214,6 @@ export default function VideoDetails() {
                       required
                     />
                   </div>
-                  
                   <button
                     type="submit"
                     className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition"
@@ -296,63 +266,33 @@ export default function VideoDetails() {
                     {new Date(video.created_at).toLocaleDateString()}
                   </span>
                 </div>
-                
                 <div className="flex justify-between py-2 border-b border-gray-100">
                   <span className="text-gray-500">{t('videoDetails.source')}</span>
                   <span className="text-dark capitalize">YouTube</span>
                 </div>
-                
                 <div className="flex justify-between py-2">
                   <span className="text-gray-500">{t('videoDetails.category')}</span>
                   <span className="text-dark capitalize">{video.category || 'General'}</span>
                 </div>
+                <div className="flex justify-between py-2">
+                  <span className="text-gray-500">Video ID</span>
+                  <span className="text-dark text-xs">{video.youtube_video_id}</span>
+                </div>
               </div>
             </div>
 
-            {/* Share Card */}
+            {/* Watch on YouTube Button */}
             <div className="bg-white rounded-xl shadow-md p-6 mt-6">
-              <h3 className="font-bold text-lg mb-4 text-dark">
-                {t('video')}
-              </h3>
-              
-              <div className="flex gap-3 justify-center">
-                <a
-                  href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 bg-[#1877F2] text-white rounded-full flex items-center justify-center hover:opacity-80 transition"
-                >
-                  f
-                </a>
-                
-                <a
-                  href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(video.title)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 bg-[#1DA1F2] text-white rounded-full flex items-center justify-center hover:opacity-80 transition"
-                >
-                  t
-                </a>
-                
-                <a
-                  href={`https://wa.me/?text=${encodeURIComponent(video.title + ' ' + window.location.href)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 bg-[#25D366] text-white rounded-full flex items-center justify-center hover:opacity-80 transition"
-                >
-                  w
-                </a>
-                
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(window.location.href);
-                    alert('Link copied to clipboard!');
-                  }}
-                  className="w-10 h-10 bg-gray-600 text-white rounded-full flex items-center justify-center hover:bg-gray-700 transition"
-                >
-                  📋
-                </button>
-              </div>
+              <h3 className="font-bold text-lg mb-4">{t('video.havingTrouble')}</h3>
+              <a
+                href={`https://www.youtube.com/watch?v=${video.youtube_video_id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 w-full py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+              >
+                <FaYoutube className="w-5 h-5" />
+                {t('video.watchOnYouTube')}
+              </a>
             </div>
           </div>
         </div>

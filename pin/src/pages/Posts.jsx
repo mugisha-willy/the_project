@@ -140,7 +140,7 @@ function Posts() {
         )}
       </div>
 
-      <Footer />
+      
     </div>
   );
 }
