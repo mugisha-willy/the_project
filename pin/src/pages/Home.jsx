@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Play, Newspaper, Flame, Video, ChevronRight, Eye, Calendar, Heart, Building } from 'lucide-react';
+import { Play, Newspaper, Flame, ChevronRight, Heart, Building } from 'lucide-react';
 import { getVideos, getPosts, getTrending } from '../api/api';
 import HeaderSlideshow from '../components/HeaderSlideshow';
-import PostCard from '../components/PostCard';
 import VideoCard from '../components/VideoCard';
+import PostCard from '../components/PostCard';
 import Footer from '../components/Footer';
 
 function HeroSection() {
@@ -41,61 +41,57 @@ function Home() {
   const [videos, setVideos] = useState([]);
   const [posts, setPosts] = useState([]);
   const [trending, setTrending] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchVideos();
-    fetchPosts();
-    fetchTrending();
+    fetchData();
   }, []);
 
-  const fetchVideos = async () => {
+  const fetchData = async () => {
+    setLoading(true);
     try {
-      const response = await getVideos();
-      console.log('Videos response:', response.data);
+      const [videosRes, postsRes, trendingRes] = await Promise.all([
+        getVideos(),
+        getPosts(),
+        getTrending()
+      ]);
       
-      // Handle the response format { videos: [], total, page, totalPages }
-      if (response.data && response.data.videos) {
-        setVideos(response.data.videos.slice(0, 6));
-      } else if (Array.isArray(response.data)) {
-        setVideos(response.data.slice(0, 6));
-      } else {
-        setVideos([]);
+      // Handle videos response
+      if (videosRes.data && videosRes.data.videos) {
+        setVideos(videosRes.data.videos.slice(0, 6));
+      } else if (Array.isArray(videosRes.data)) {
+        setVideos(videosRes.data.slice(0, 6));
+      }
+      
+      // Handle posts response
+      if (postsRes.data && postsRes.data.posts) {
+        setPosts(postsRes.data.posts.slice(0, 3));
+      } else if (Array.isArray(postsRes.data)) {
+        setPosts(postsRes.data.slice(0, 3));
+      }
+      
+      // Handle trending response
+      if (Array.isArray(trendingRes.data)) {
+        setTrending(trendingRes.data.slice(0, 4));
       }
     } catch (error) {
-      console.error('Error fetching videos:', error);
+      console.error('Error fetching home data:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const fetchPosts = async () => {
-    try {
-      const response = await getPosts();
-      console.log('Posts response:', response.data);
-      
-      if (response.data && response.data.posts) {
-        setPosts(response.data.posts.slice(0, 3));
-      } else if (Array.isArray(response.data)) {
-        setPosts(response.data.slice(0, 3));
-      } else {
-        setPosts([]);
-      }
-    } catch (error) {
-      console.error('Error fetching posts:', error);
-    }
-  };
-
-  const fetchTrending = async () => {
-    try {
-      const response = await getTrending();
-      if (Array.isArray(response.data)) {
-        setTrending(response.data.slice(0, 4));
-      }
-    } catch (error) {
-      console.error('Error fetching trending:', error);
-    }
-  };
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-off-white">
+      {/* ✅ Header Slideshow - Ads will appear here */}
       <HeaderSlideshow />
       
       <HeroSection />
@@ -116,7 +112,7 @@ function Home() {
           </section>
         )}
         
-        {/* Videos Section - Thumbnails will show here */}
+        {/* Videos Section */}
         <section id="videos" className="mb-12">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-dark">{t('sections.latestVideos')}</h2>
@@ -125,18 +121,11 @@ function Home() {
               <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
-          
-          {videos.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-xl shadow-md">
-              <p className="text-gray-500">Loading videos...</p>
-            </div>
-          ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {videos.map((video) => (
-                <VideoCard key={video.id} video={video} />
-              ))}
-            </div>
-          )}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {videos.map((video) => (
+              <VideoCard key={video.id} video={video} />
+            ))}
+          </div>
         </section>
         
         {/* Call to Action */}
@@ -168,27 +157,20 @@ function Home() {
         <section id="news">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-dark">{t('sections.latestNews')}</h2>
-            <Link to="/news" className="text-primary hover:text-primary-dark flex items-center space-x-1 font-medium">
+            <Link to="/posts" className="text-primary hover:text-primary-dark flex items-center space-x-1 font-medium">
               <span>{t('sections.viewAll')}</span>
               <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
-          
-          {posts.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-xl shadow-md">
-              <p className="text-gray-500">No posts yet.</p>
-            </div>
-          ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {posts.map((post) => (
-                <PostCard key={post.id} post={post} />
-              ))}
-            </div>
-          )}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {posts.map((post) => (
+              <PostCard key={post.id} post={post} />
+            ))}
+          </div>
         </section>
       </main>
       
-      
+      <Footer />
     </div>
   );
 }

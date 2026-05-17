@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, Edit, Image, Video, Eye, EyeOff } from 'lucide-react';
+import { Plus, Trash2, Edit, Image, Video, Eye, EyeOff, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getDisplayAds, createDisplayAd, updateDisplayAd, deleteDisplayAd } from '../../api/api';
 
@@ -34,20 +34,44 @@ function ManageDisplayAds() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
     try {
+      const adData = {
+        title: formData.title,
+        type: formData.type,
+        image_url: formData.image_url,
+        video_url: formData.video_url,
+        link: formData.link,
+        is_active: formData.is_active
+      };
+      
       if (editingAd) {
-        await updateDisplayAd(editingAd.id, formData);
+        await updateDisplayAd(editingAd.id, adData);
+        alert('Ad updated successfully!');
       } else {
-        await createDisplayAd(formData);
+        await createDisplayAd(adData);
+        alert('Ad created successfully!');
       }
+      
       setShowModal(false);
-      setEditingAd(null);
-      setFormData({ title: '', type: 'image', image_url: '', video_url: '', link: '', is_active: true });
+      resetForm();
       fetchAds();
     } catch (error) {
       console.error('Error saving ad:', error);
-      alert('Failed to save ad');
+      alert('Failed to save ad. Please check your backend connection.');
     }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      title: '',
+      type: 'image',
+      image_url: '',
+      video_url: '',
+      link: '',
+      is_active: true
+    });
+    setEditingAd(null);
   };
 
   const handleDelete = async (id) => {
@@ -55,11 +79,25 @@ function ManageDisplayAds() {
       try {
         await deleteDisplayAd(id);
         fetchAds();
+        alert('Ad deleted successfully!');
       } catch (error) {
         console.error('Error deleting ad:', error);
         alert('Failed to delete ad');
       }
     }
+  };
+
+  const handleEdit = (ad) => {
+    setEditingAd(ad);
+    setFormData({
+      title: ad.title,
+      type: ad.type,
+      image_url: ad.image_url || '',
+      video_url: ad.video_url || '',
+      link: ad.link || '',
+      is_active: ad.is_active
+    });
+    setShowModal(true);
   };
 
   const handleToggleStatus = async (ad) => {
@@ -88,11 +126,10 @@ function ManageDisplayAds() {
           <h2 className="font-semibold">Header Ads</h2>
           <button
             onClick={() => {
-              setEditingAd(null);
-              setFormData({ title: '', type: 'image', image_url: '', video_url: '', link: '', is_active: true });
+              resetForm();
               setShowModal(true);
             }}
-            className="bg-primary text-white px-4 py-2 rounded-lg flex items-center space-x-2"
+            className="bg-primary text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-primary-dark transition"
           >
             <Plus className="w-4 h-4" />
             <span>Add Ad</span>
@@ -120,7 +157,7 @@ function ManageDisplayAds() {
                     ) : (
                       <img src={ad.image_url} alt={ad.title} className="w-24 h-12 object-cover rounded" />
                     )}
-                   </td>
+                  </td>
                   <td className="px-4 py-3 font-medium">{ad.title}</td>
                   <td className="px-4 py-3">
                     <span className={`inline-flex items-center space-x-1 px-2 py-1 rounded-full text-xs ${ad.type === 'video' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
@@ -142,27 +179,10 @@ function ManageDisplayAds() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex space-x-2">
-                      <button
-                        onClick={() => {
-                          setEditingAd(ad);
-                          setFormData({
-                            title: ad.title,
-                            type: ad.type,
-                            image_url: ad.image_url || '',
-                            video_url: ad.video_url || '',
-                            link: ad.link || '',
-                            is_active: ad.is_active
-                          });
-                          setShowModal(true);
-                        }}
-                        className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-                      >
+                      <button onClick={() => handleEdit(ad)} className="p-1 text-blue-600 hover:bg-blue-50 rounded">
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button
-                        onClick={() => handleDelete(ad.id)}
-                        className="p-1 text-red-600 hover:bg-red-50 rounded"
-                      >
+                      <button onClick={() => handleDelete(ad.id)} className="p-1 text-red-600 hover:bg-red-50 rounded">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -174,26 +194,34 @@ function ManageDisplayAds() {
         </div>
       </div>
 
+      {/* Modal for Create/Edit Ad */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6">
-            <h2 className="text-xl font-bold mb-4">{editingAd ? 'Edit Ad' : 'Add New Ad'}</h2>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full mx-4 p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">{editingAd ? 'Edit Ad' : 'Add New Ad'}</h2>
+              <button onClick={() => setShowModal(false)} className="p-1 hover:bg-gray-100 rounded-lg">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Title</label>
+                <label className="block text-sm font-medium mb-1">Title *</label>
                 <input
                   type="text"
                   required
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="Ad title"
                 />
               </div>
               
               <div>
                 <label className="block text-sm font-medium mb-1">Ad Type</label>
                 <div className="flex space-x-4">
-                  <label className="flex items-center space-x-2">
+                  <label className="flex items-center space-x-2 cursor-pointer">
                     <input
                       type="radio"
                       value="image"
@@ -203,7 +231,7 @@ function ManageDisplayAds() {
                     <Image className="w-4 h-4" />
                     <span>Image Ad</span>
                   </label>
-                  <label className="flex items-center space-x-2">
+                  <label className="flex items-center space-x-2 cursor-pointer">
                     <input
                       type="radio"
                       value="video"
@@ -221,11 +249,10 @@ function ManageDisplayAds() {
                   <label className="block text-sm font-medium mb-1">Image URL</label>
                   <input
                     type="text"
-                    required
                     value={formData.image_url}
                     onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
                     className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                    placeholder="https://example.com/ad-image.jpg"
+                    placeholder="https://example.com/image.jpg"
                   />
                   {formData.image_url && (
                     <img src={formData.image_url} alt="Preview" className="mt-2 h-16 object-contain rounded" />
@@ -236,15 +263,11 @@ function ManageDisplayAds() {
                   <label className="block text-sm font-medium mb-1">Video URL</label>
                   <input
                     type="text"
-                    required
                     value={formData.video_url}
                     onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
                     className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                    placeholder="https://example.com/ad-video.mp4"
+                    placeholder="https://example.com/video.mp4"
                   />
-                  {formData.video_url && (
-                    <video src={formData.video_url} className="mt-2 h-16 object-contain rounded" muted />
-                  )}
                 </div>
               )}
               
@@ -259,14 +282,27 @@ function ManageDisplayAds() {
                 />
               </div>
               
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.is_active}
+                  onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+                  className="w-4 h-4 text-primary rounded"
+                />
+                <span className="text-sm">Active</span>
+              </label>
+              
               <div className="flex space-x-3 pt-4">
-                <button type="submit" className="flex-1 bg-primary text-white py-2 rounded-lg hover:bg-primary-dark">
+                <button
+                  type="submit"
+                  className="flex-1 bg-primary text-white py-2 rounded-lg hover:bg-primary-dark transition"
+                >
                   Save
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="flex-1 bg-gray-200 text-gray-800 py-2 rounded-lg hover:bg-gray-300"
+                  className="flex-1 bg-gray-200 text-gray-800 py-2 rounded-lg hover:bg-gray-300 transition"
                 >
                   Cancel
                 </button>

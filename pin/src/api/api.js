@@ -7,7 +7,6 @@ const api = axios.create({
   }
 });
 
-// Add token to requests
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
@@ -15,8 +14,6 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
-
-// ============ EXPORT ALL API FUNCTIONS ============
 
 // Health check
 export const healthCheck = () => api.get('/health');
@@ -53,14 +50,15 @@ export const getLikes = (params) => api.get('/likes', { params });
 // Dashboard
 export const getDashboard = () => api.get('/dashboard');
 
-// Ads
+// ============ ADS EXPORTS - ADD THESE ============
 export const getDisplayAds = () => api.get('/ads');
 export const getActiveDisplayAd = () => api.get('/ads/active');
 export const createDisplayAd = (data) => api.post('/admin/ads', data);
 export const updateDisplayAd = (id, data) => api.put(`/admin/ads/${id}`, data);
 export const deleteDisplayAd = (id) => api.delete(`/admin/ads/${id}`);
 export const trackAdView = (id) => api.post(`/ads/${id}/view`);
-export const trackAdClick = (id) => api.post(`/ads/${id}/click`);
+export const trackAdClick = (id) => api.post(`/ads/${id}/click`);  // ✅ ADD THIS
+// ================================================
 
 // Donations
 export const createDonation = (data) => api.post('/donations', data);
@@ -76,8 +74,5 @@ export const updateSponsorshipStatus = (id, data) => api.put(`/sponsorships/${id
 export const subscribe = (data) => api.post('/newsletter/subscribe', data);
 export const unsubscribe = (email) => api.delete(`/newsletter/unsubscribe/${email}`);
 export const getSubscribers = () => api.get('/admin/newsletter/subscribers');
-
-// ✅ ADD THIS - Global search for SearchModal
-export const globalSearch = (query) => api.get(`/search?q=${query}`);
 
 export default api;

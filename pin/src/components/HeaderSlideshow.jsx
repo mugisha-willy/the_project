@@ -27,13 +27,17 @@ function HeaderSlideshow() {
       const response = await getDisplayAds();
       console.log('Ads response:', response.data);
       
-      if (response.data && response.data.length > 0) {
+      if (response.data && Array.isArray(response.data)) {
         setAds(response.data);
+      } else if (response.data && response.data.ads && Array.isArray(response.data.ads)) {
+        setAds(response.data.ads);
       } else {
-        console.log('No ads found');
+        console.warn('Unexpected ads response format:', response.data);
+        setAds([]);
       }
     } catch (error) {
       console.error('Error fetching ads:', error);
+      setAds([]);
     } finally {
       setLoading(false);
     }
@@ -112,6 +116,7 @@ function HeaderSlideshow() {
     }
   };
 
+  // Don't show anything while loading or if no ads or hidden
   if (loading) {
     return null;
   }
@@ -124,14 +129,17 @@ function HeaderSlideshow() {
     <div className="relative bg-dark border-b border-primary/30">
       <div className="container mx-auto px-4 py-2">
         <div className="relative group">
+          {/* Advertisement Label */}
           <div className="absolute top-0 left-0 z-10 bg-primary text-white text-xs px-2 py-0.5 rounded-br-lg">
             Advertisement
           </div>
           
+          {/* Slide Counter */}
           <div className="absolute top-0 right-0 z-10 bg-black/50 text-white text-xs px-2 py-0.5 rounded-bl-lg">
             {currentIndex + 1} / {ads.length}
           </div>
           
+          {/* Close Button */}
           <button
             onClick={handleClose}
             className="absolute -top-2 -right-2 z-20 bg-gray-800 rounded-full shadow-md p-1 hover:bg-gray-700 transition opacity-0 group-hover:opacity-100"
@@ -139,6 +147,7 @@ function HeaderSlideshow() {
             <X className="w-4 h-4 text-white" />
           </button>
           
+          {/* Progress Bar */}
           <div className="absolute bottom-0 left-0 right-0 z-10 h-1 bg-gray-700">
             <div 
               className="h-full bg-primary transition-all duration-100"
@@ -146,6 +155,7 @@ function HeaderSlideshow() {
             />
           </div>
           
+          {/* Navigation Arrows */}
           {ads.length > 1 && (
             <>
               <button
@@ -164,6 +174,7 @@ function HeaderSlideshow() {
             </>
           )}
           
+          {/* Ad Content */}
           <div onClick={handleClick} className="cursor-pointer">
             {currentAd?.type === 'video' ? (
               <div className="relative">
@@ -194,12 +205,13 @@ function HeaderSlideshow() {
             ) : (
               <img
                 src={currentAd?.image_url}
-                alt={currentAd?.title}
+                alt={currentAd?.title || 'Advertisement'}
                 className="w-full h-auto max-h-24 object-contain mx-auto rounded-lg"
               />
             )}
           </div>
           
+          {/* Dots Indicator */}
           {ads.length > 1 && (
             <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 z-10 flex space-x-1">
               {ads.map((_, idx) => (

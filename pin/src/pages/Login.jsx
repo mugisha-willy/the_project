@@ -3,9 +3,11 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LogIn, Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 
 function Login() {
   const { t } = useTranslation();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -40,9 +42,8 @@ function Login() {
         localStorage.removeItem('remembered_password');
       }
       
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      localStorage.setItem('isLoggedIn', 'true');
+      // Use the context login function
+      login(response.data);
       
       if (!response.data.user.has_changed_credentials) {
         navigate('/change-credentials');
@@ -122,10 +123,7 @@ function Login() {
               />
               <span className="ml-2 text-sm text-gray-600">Remember me</span>
             </label>
-            <Link 
-              to="/forgot-password" 
-              className="text-sm text-primary hover:text-primary-dark font-medium"
-            >
+            <Link to="/forgot-password" className="text-sm text-primary hover:text-primary-dark font-medium">
               Forgot password?
             </Link>
           </div>

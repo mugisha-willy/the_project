@@ -4,14 +4,14 @@ import { useTranslation } from 'react-i18next';
 import { Menu, X, Home, Video, Newspaper, Flame, LogIn, User, ChevronDown, Search, Info, LogOut, MessageCircle } from 'lucide-react';
 import LanguageSwitcher from './LanguageSwitcher';
 import SearchModal from './SearchModal';
-import { logout } from '../api/api';
+import { logout as apiLogout } from '../api/api';
+import { useAuth } from '../context/AuthContext';
 
 function Navbar() {
   const { t } = useTranslation();
+  const { isLoggedIn, user, logout: authLogout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const navigate = useNavigate();
@@ -19,42 +19,19 @@ function Navbar() {
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
-    
-    const token = localStorage.getItem('token');
-    const userData = localStorage.getItem('user');
-    if (token && userData) {
-      setIsLoggedIn(true);
-      setUser(JSON.parse(userData));
-    }
-    
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const handleLogout = async () => {
     try {
-      await logout();
+      await apiLogout();
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      localStorage.removeItem('isLoggedIn');
-      setIsLoggedIn(false);
-      setUser(null);
+      authLogout();
       navigate('/login');
     }
   };
-
-  // Close user menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (showUserMenu && !event.target.closest('.user-menu-container')) {
-        setShowUserMenu(false);
-      }
-    };
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, [showUserMenu]);
 
   const navLinks = [
     { to: '/', label: t('nav.home'), icon: Home },
@@ -75,7 +52,7 @@ function Navbar() {
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-2 flex-shrink-0">
               <img 
-                src="/hub.jpeg" 
+                src="/pinRwanda.png" 
                 alt="PIN RWANDA Logo" 
                 className="w-9 h-9 object-contain rounded-lg shadow-lg"
               />
@@ -100,7 +77,7 @@ function Navbar() {
             </div>
 
             {/* Right Side Actions */}
-            <div className="flex items-center space-x-1 flex-shrink-0">
+            <div className="flex items-center space-x-1">
               <button 
                 onClick={() => setShowSearch(true)}
                 className="p-2 text-gray-300 hover:text-primary hover:bg-white/5 rounded-lg transition"
@@ -111,7 +88,7 @@ function Navbar() {
               <LanguageSwitcher />
 
               {isLoggedIn ? (
-                <div className="relative user-menu-container">
+                <div className="relative">
                   <button
                     onClick={() => setShowUserMenu(!showUserMenu)}
                     className="flex items-center space-x-2 px-3 py-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition"
@@ -122,38 +99,20 @@ function Navbar() {
                   </button>
                   
                   {showUserMenu && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl py-2 z-50 border border-gray-200">
-                      <div className="px-4 py-2 text-xs text-gray-500 border-b">Admin Panel</div>
-                      <Link 
-                        to="/dashboard" 
-                        className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                        onClick={() => setShowUserMenu(false)}
-                      >
-                        Dashboard
-                      </Link>
-                      <Link 
-                        to="/create-post" 
-                        className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                        onClick={() => setShowUserMenu(false)}
-                      >
-                        Create Post
-                      </Link>
-                      <Link 
-                        to="/admin/display-ads" 
-                        className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                        onClick={() => setShowUserMenu(false)}
-                      >
-                        Manage Ads
-                      </Link>
-                      <hr className="my-1" />
-                      <button 
-                        onClick={handleLogout} 
-                        className="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 flex items-center space-x-2"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        <span>Logout</span>
-                      </button>
-                    </div>
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)}></div>
+                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl py-2 z-50">
+                        <div className="px-4 py-2 text-xs text-gray-500 border-b">Admin Panel</div>
+                        <Link to="/dashboard" className="block px-4 py-2 text-gray-700 hover:bg-gray-100" onClick={() => setShowUserMenu(false)}>Dashboard</Link>
+                        <Link to="/create-post" className="block px-4 py-2 text-gray-700 hover:bg-gray-100" onClick={() => setShowUserMenu(false)}>Create Post</Link>
+                        <Link to="/admin/display-ads" className="block px-4 py-2 text-gray-700 hover:bg-gray-100" onClick={() => setShowUserMenu(false)}>Manage Ads</Link>
+                        <hr className="my-1" />
+                        <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 flex items-center space-x-2">
+                          <LogOut className="w-4 h-4" />
+                          <span>Logout</span>
+                        </button>
+                      </div>
+                    </>
                   )}
                 </div>
               ) : (
@@ -194,7 +153,6 @@ function Navbar() {
                 <>
                   <Link to="/dashboard" onClick={() => setIsOpen(false)} className="px-4 py-3 text-gray-300 hover:bg-white/5 rounded-lg">Dashboard</Link>
                   <Link to="/create-post" onClick={() => setIsOpen(false)} className="px-4 py-3 text-gray-300 hover:bg-white/5 rounded-lg">Create Post</Link>
-                  <Link to="/admin/display-ads" onClick={() => setIsOpen(false)} className="px-4 py-3 text-gray-300 hover:bg-white/5 rounded-lg">Manage Ads</Link>
                   <button onClick={() => { handleLogout(); setIsOpen(false); }} className="flex items-center space-x-2 px-4 py-3 text-red-400 hover:bg-white/5 rounded-lg">
                     <LogOut className="w-4 h-4" />
                     <span>Logout</span>
