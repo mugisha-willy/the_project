@@ -29,7 +29,7 @@ export default function VideoDetails() {
     try {
       setLoading(true);
       const response = await api.get(`/videos/${id}`);
-      setVideo(response.data);
+      setVideo(response.data.video);
     } catch (err) {
       console.error('Error fetching video:', err);
       setError(err.response?.data?.message || 'Failed to load video');
